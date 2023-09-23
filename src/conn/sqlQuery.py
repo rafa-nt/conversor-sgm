@@ -1,10 +1,11 @@
 # Author: Rafael Camargo
 # Conversor de banco de dados Casa da Automação
+import logging
 
 class QueryMaker():
 
-    def __init__(self, sysout=False):
-        self.sysout = sysout
+    def __init__(self, sysout=True):
+        self.__sysout = sysout
 
     def simple(self, table, order, cols='*', cmd='SELECT', filter=None):
         """
@@ -22,8 +23,8 @@ class QueryMaker():
         if filter:
             query += (' WHERE ' + filter)
         query += (' ORDER BY ' + order)
-        if self.sysout:
-            print(query)
+        if self.__sysout:
+            logging.debug(query)
         return query
 
     def leftJoin(self, table1, table2, param1, param2, order, cols='*', cmd='SELECT', filter=None):
@@ -47,8 +48,8 @@ class QueryMaker():
         if filter:
             query += ' WHERE ' + filter
         query += ' ORDER BY ' + order
-        if self.sysout:
-            print(query)
+        if self.__sysout:
+            logging.debug(query)
         return query
 
     def fullOuterJoin(self, table1, table2, param1, param2, order, cols='*', cmd='SELECT', filter=None):
@@ -72,8 +73,8 @@ class QueryMaker():
         if filter:
             query += ' WHERE ' + filter
         query += ' ORDER BY ' + order
-        if self.sysout:
-            print(query)
+        if self.__sysout:
+            logging.debug(query)
         return query
 
     def doubleLeftJoin(self, table1, table2, table3, param1, param2, param3, order, cols='*', cmd='SELECT', filter=None):
@@ -102,6 +103,6 @@ class QueryMaker():
         if filter:
             query += ' WHERE ' + filter
         query += ' ORDER BY ' + order
-        if self.sysout:
-            print(query)
+        if self.__sysout:
+            logging.debug(query)
         return query

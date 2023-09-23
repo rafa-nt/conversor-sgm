@@ -3,17 +3,17 @@ import sqlite3
 
 class Database:
     def __init__(self, database):
-        self.database = 'db/' + database + '.db'
-        self.conn = None
+        self.__database = 'db/' + database + '.db'
+        self.__conn = None
 
     def connect(self):
-        self.conn = sqlite3.connect(self.database)
+        self.__conn = sqlite3.connect(self.__database)
 
     def cursor(self):
-        return self.conn.cursor()
+        return self.__conn.cursor()
 
     def closeConn(self):
-        self.conn.close()
+        self.__conn.close()
 
     def commit(self):
-        self.conn.commit()
+        self.__conn.commit()

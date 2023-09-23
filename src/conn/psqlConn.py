@@ -3,23 +3,23 @@ import psycopg2
 
 class Postgres():
     def __init__(self, database='', host='localhost', port=5450, user='postgres', password='19983101'):
-        self.database = database
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
+        self.__database = database
+        self.__host = host
+        self.__port = port
+        self.__user = user
+        self.__password = password
 
     def connect(self):
-        self.conn = psycopg2.connect(
-            host=self.host,
-            database=self.database,
-            port=self.port,
-            user=self.user,
-            password=self.password,
+        self.__conn = psycopg2.connect(
+            host=self.__host,
+            database=self.__database,
+            port=self.__port,
+            user=self.__user,
+            password=self.__password,
         )
 
     def cursor(self):
-        return self.conn.cursor()
+        return self.__conn.cursor()
 
     def closeConn(self):
-        self.conn.close()
+        self.__conn.close()

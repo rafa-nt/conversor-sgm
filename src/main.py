@@ -1,4 +1,5 @@
 import time
+import logging
 from sqlite.dados import Database
 from sqlite.configPG import ConfigPG
 from conn.psqlConn import Postgres
@@ -8,25 +9,26 @@ from common.converter import Converter
 from common.exportar import Exportar
 from dotenv import dotenv_values
 
-# 
-# dbi = database interna
+
 # cur = cursor do banco interno
 
 #### CONFIGURAÇÃO ####
 config = dotenv_values(".config") 
 
-dbi = Database(config['DATABASE_INT'])
-dbi.connect()
-# dbi.conn.execute("PRAGMA key='" + config['KEY'] + "'")
-cur = dbi.cursor()
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename='conversor.log')
+logging.info('Iniciando conversor - BASE: ' + config['DATABASE_CLIENT'] + ' - INTERNA: ' + config['DATABASE_INT'])
+
+iDB = Database(config['DATABASE_INT'])
+iDB.connect()
+
+iCursor = iDB.cursor()
 
 pg = ConfigPG()
-pg.createTables(cur)
-pg.insertConfig(cur)
-dbi.commit()
+pg.createTables(iCursor)
+pg.insertConfig(iCursor)
+iDB.commit()
 
-sgm = Sgm()
-sgm.createTables(cur) #Create tables 
+sgm = Sgm(iCursor)
 
 qm = QueryMaker()
 
@@ -37,8 +39,8 @@ db = Postgres(
 db.connect()
 cursor = db.cursor()
 
-cvt = Converter(cursor, qm, sgm, dbi, cur)
-exp = Exportar(dbi, sgm)
+cvt = Converter(cursor, qm, sgm, iDB)
+exp = Exportar(iDB)
 #### FIM CONFIGURAÇÃO ####
 
 def exibirMenu(opcoes, titulo="Menu"):
@@ -62,14 +64,13 @@ def exibirMenu(opcoes, titulo="Menu"):
 
 def executeCVT(fun, table=''):
     print(3*'\n', 'Iniciando conversão... ', table)
-    start = time.time()
     fun()
-    end = time.time()
-    print('Tempo de execução: {:.2f} segundos'.format(end - start))
+    print('\n', 'Conversão finalizada.')
     time.sleep(1)
 
 def completoCVT():
     executeCVT(cvt.clientes, 'Clientes')
+    executeCVT(cvt.cidade, 'Cidade')
     executeCVT(cvt.produtos, 'Produtos')
     executeCVT(cvt.produtosBarras, 'Produtos Barras')
     executeCVT(cvt.tributos, 'Tributos')
@@ -82,6 +83,7 @@ def completoCVT():
 
 def clientesCVT():
     executeCVT(cvt.clientes)
+    executeCVT(cvt.cidade)
 
 def produtosCVT():
     executeCVT(cvt.produtos)
@@ -178,7 +180,7 @@ def exportacao():
 
 def close():
     print('Saindo...')
-    dbi.closeConn()
+    iDB.closeConn()
     db.closeConn()
     exit()
 

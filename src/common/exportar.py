@@ -1,54 +1,61 @@
 import pandas as pd
 
 class Exportar:
-    def __init__(self, conn, sgm):
-        self.conn = conn
-        self.sgm = sgm
+    def __init__(self, conn):
+        self.__conn = conn
 
-    def export(self, query, conn, filename):
-        filename = filename + '.xlsx'
-        df = pd.read_sql(query, conn)
+    def __export(self, query, filename):
+        filename = 'export/' + filename + '.xlsx'
+        df = pd.read_sql(query, self.__conn)
         df.to_excel(filename, index=False)
 
     def grupos(self):
         query = 'SELECT * FROM grupos'
-        self.export(query, self.conn, 'grupos')
+        self.__export(query, 'grupos')
 
     def tanques(self):
         query = 'SELECT * FROM tanques'
-        self.export(query, self.conn, 'tanques')
+        self.__export(query, 'tanques')
     
     def bombas(self):
         query = 'SELECT * FROM bombas'
-        self.export(query, self.conn, 'bombas')
+        self.__export(query, 'bombas')
     
     def clientes(self):
         query = 'SELECT * FROM clientes'
-        self.export(query, self.conn, 'clientes')
+        self.__export(query, 'clientes')
 
     def fornecedores(self):
         query = 'SELECT * FROM fornecedores'
-        self.export(query, self.conn, 'fornecedores')
+        self.__export(query, 'fornecedores')
 
     def produtos(self):
-        query = 'SELECT * FROM produtos'
-        self.export(query, self.conn, 'produtos')
+        query = '''
+            SELECT p.*, 
+                (SELECT GROUP_CONCAT(codigo_barras, ',') 
+                FROM produtos_barras pb 
+                WHERE pb.codigo = p.codigo 
+                GROUP BY pb.codigo) AS codigo_barras
+            FROM produtos p
+        '''
+        self.__export(query, 'produtos')
+
 
     def produtosBarras(self):
         query = 'SELECT * FROM produtos_barras'
-        self.export(query, self.conn, 'produtos_barras')
+        self.__export(query, 'produtos_barras')
 
     def frota(self):
         query = 'SELECT * FROM frota'
-        self.export(query, self.conn, 'frota')
+        self.__export(query, 'frota')
     
     def tributos(self):
         query = 'SELECT * FROM tributos'
-        self.export(query, self.conn, 'tributos')
+        self.__export(query, 'tributos')
 
     def funcionarios(self):
         query = 'SELECT * FROM funcionarios'
-        self.export(query, self.conn, 'funcionarios')
+        self.__export(query, 'funcionarios')
 
     # def cfgFiscalProdutos(self):
     #     configFiscal = pd.read_sql('SELECT * FROM pg_configuracao_fiscal', self.conn)

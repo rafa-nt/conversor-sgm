@@ -1,4 +1,5 @@
 import sqlite3
+import logging
 
 class ConfigPG():
     def __init__(self, database='config'):
@@ -50,8 +51,8 @@ class ConfigPG():
         for chave, valor in configs.items():
             try:
                 cursor.execute('INSERT INTO pg_configuracao (chave, valor) VALUES (?, ?)', (chave, valor))
-            except:
-                pass
+            except Exception as e:
+                logging.info(e)
     
         config_fiscal = {
             '1': [

@@ -1,18 +1,19 @@
 class Method():
-    def __init__(self):
-        self.table ={
-            'produtos': 'ect001', # ok
-            'produtos_barras': 'ect001d', # ok
-            'bombas': 'bombas', # ok
-            'frota': 'ect002g', # ok
-            'grupos': 'ect004', # ok
-            'tributos': 'ect010', # ok
-            'fornecedores': 'oft003', # ok
-            'funcionarios': 'oft006', # ok
-            'clientes': 'spt002', # ok
-            'tanques': 'tanque', # ok
+    def __init__(self, cursor):
+        self.__table ={
+            'produtos': 'ect001',
+            'produtos_barras': 'ect001d',
+            'bombas': 'bombas',
+            'frota': 'ect002g',
+            'grupos': 'ect004',
+            'tributos': 'ect010',
+            'fornecedores': 'oft003',
+            'funcionarios': 'oft006',
+            'clientes': 'spt002',
+            'tanques': 'tanque',
+            'cidade': 'cidade',
         }
-        self.fields = {
+        self.__fields = {
             'frota': [
                 'clicod',
                 'clpplaca',
@@ -82,39 +83,66 @@ class Method():
                 'funativo'
             ],
             'clientes': [
-                'clicod',
-                'clitippess',
-                'cliindativ',
-                'clirazsoci',
-                'clinomfant',
-                'clienderec',
-                'clibairro',
-                'cliuf',
-                'clicep',
-                'clicgc',
-                'cliinsesta',
-                'clinrocpf',
-                'clinroiden',
-                'clinro1fon',
-                'climail',
-                'cliendnro',
-                'cliendcomp'
+                'spt002.clicod',
+                'spt002.clitippess',
+                'spt002.cliindativ',
+                'spt002.clirazsoci',
+                'spt002.clinomfant',
+                'spt002.clienderec',
+                'spt002.clibairro',
+                'spt002.cliuf',
+                'spt002.clicep',
+                'spt002.clicgc',
+                'spt002.cliinsesta',
+                'spt002.clinrocpf',
+                'spt002.clinroiden',
+                'spt002.clinro1fon',
+                'spt002.climail',
+                'spt002.cliendnro',
+                'spt002.cliendcomp',
+                'spt002.clicidcod',
             ],
             'tanques': [
                 'tancod',
                 'taqcaparma',
                 'taqativo',
+            ],
+            'cidade': [
+                'cidcod',
+                'cidnome',
+                'cidcodibge',
             ]
         }
+        self.__inserts = {
+            'produtos': self.insertProdutos,
+            'produtos_barras': self.insertProdutosBarras,
+            'bombas': self.insertBombas,
+            'frota': self.insertFrota,
+            'grupos': self.insertGrupos,
+            'tributos': self.insertTributos,
+            'fornecedores': self.insertFornecedores,
+            'funcionarios': self.insertFuncionarios,
+            'clientes': self.insertClientes,
+            'tanques': self.insertTanques,
+            'cidade': self.insertCidade
+        }
+        self.__cursor = cursor
+        self.__createTables()
 
     def getListComma(self, key):
-        return ', '.join(self.fields[key])
+        return ', '.join(self.__fields[key])
+    
+    def getTable(self, key):
+        return self.__table[key]
+    
+    def inserts(self, key, row):
+        self.__inserts[key](row)
 
-    def createTables(self, cursor):
-        cursor.execute('''
+    def __createTables(self):
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS produtos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                codigo TEXT,
+                codigo TEXT UNIQUE,
                 descricao TEXT,
                 codigo_grupo TEXT,
                 preco_custo REAL,
@@ -130,7 +158,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS produtos_barras (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -139,7 +167,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS frota (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo_cliente TEXT,
@@ -150,7 +178,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS bombas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -161,7 +189,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS grupos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -169,7 +197,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS tributos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -180,7 +208,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS fornecedores (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -202,7 +230,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS funcionarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -211,7 +239,7 @@ class Method():
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -230,11 +258,12 @@ class Method():
                 fone TEXT,
                 email TEXT,
                 numero TEXT,
-                complemento TEXT
+                complemento TEXT,
+                cidade TEXT
             )
         ''')
 
-        cursor.execute('''
+        self.__cursor.execute('''
             CREATE TABLE IF NOT EXISTS tanques (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 codigo TEXT,
@@ -243,48 +272,165 @@ class Method():
             )
         ''')
 
-    def insert(self, key):
-        tam = len(self.fields[key])
-        elementos = self.fields[key]
+        self.__cursor.execute('''
+            CREATE TABLE IF NOT EXISTS cidade (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                codigo TEXT,
+                cidade TEXT,
+                codigo_ibge TEXT   
+            )
+        ''')
+
+    def cleanRows(self, row):
+        return [item.rstrip() if isinstance(item, str) else item for item in row]
+    
+    # def insert(self, key):
+    #     tam = len(self.fields[key])
+    #     elementos = self.fields[key]
+    #     query = 'INSERT INTO ' + key + \
+    #         ' (' + ', '.join(elementos) + ')' + \
+    #         ' VALUES (' + ', '.join(['?'] * tam) + ')'
+    #     return query
+    
+    def __insertWithPK(self, key):
         query = 'INSERT INTO ' + key + \
-            ' (' + ', '.join(elementos) + ')' + \
-            ' VALUES (' + ', '.join(['?'] * tam) + ')'
+            ' VALUES (?, ' + ', '.join(['?'] * len(self.__fields[key])) + ')'
         return query
     
-    def directInsert(self, key):
-        query = 'INSERT INTO ' + key + \
-            ' VALUES (?, ' + ', '.join(['?'] * len(self.fields[key])) + ')'
-        return query
+    def insertProdutos(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('produtos'), 
+            (
+                None,
+                cleaned_row[0], 
+                cleaned_row[1], 
+                row[2], 
+                float(row[3]), 
+                float(row[4]), 
+                cleaned_row[5], 
+                cleaned_row[6], 
+                cleaned_row[7], 
+                cleaned_row[8], 
+                cleaned_row[9], 
+                cleaned_row[10], 
+                float(row[11]), 
+                cleaned_row[12]
+            )
+        )
     
-    def insertProdutos(self, cursor, row):
-        cursor.execute(self.directInsert('produtos'), (None, row[0], row[1], row[2], float(row[3]), float(row[4]), row[5], row[6], row[7], row[8], row[9], row[10], float(row[11]), row[12]))
+    def insertProdutosBarras(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('produtos_barras'), 
+            (
+                None, 
+                cleaned_row[0], 
+                cleaned_row[1], 
+                cleaned_row[2]
+            )
+        )
+
+    def insertBombas(self, row):
+        self.__cursor.execute(self.__insertWithPK('bombas'), (None, row[0], row[1], row[2], row[3], row[4]))
+
+    def insertFrota(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('frota'), 
+            (
+                None, 
+                cleaned_row[0], 
+                cleaned_row[1], 
+                cleaned_row[2], 
+                cleaned_row[3], 
+                cleaned_row[4]
+            )
+        )
     
-    def insertProdutosBarras(self, cursor, row):
-        cursor.execute(self.directInsert('produtos_barras'), (None, row[0], row[1], row[2]))
+    def insertGrupos(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('grupos'), 
+            (
+                None, 
+                cleaned_row[0], 
+                cleaned_row[1]
+            )
+        )
 
-    def insertBombas(self, cursor, row):
-        cursor.execute(self.directInsert('bombas'), (None, row[0], row[1], row[2], row[3], row[4]))
+    def insertTributos(self, row):
+        self.__cursor.execute(self.__insertWithPK('tributos'), (None, row[0], row[1], row[2], float(row[3]), row[4]))
 
-    def insertFrota(self, cursor, row):
-        cursor.execute(self.directInsert('frota'), (None, row[0], row[1], row[2], row[3], row[4]))
-    
-    def insertGrupos(self, cursor, row):
-        cursor.execute(self.directInsert('grupos'), (None, row[0], row[1]))
+    def insertFornecedores(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('fornecedores'), 
+            (
+                None, 
+                cleaned_row[0], 
+                cleaned_row[1], 
+                cleaned_row[2], 
+                cleaned_row[3], 
+                cleaned_row[4], 
+                cleaned_row[5], 
+                cleaned_row[6], 
+                cleaned_row[7], 
+                cleaned_row[8], 
+                cleaned_row[9], 
+                cleaned_row[10], 
+                cleaned_row[11], 
+                cleaned_row[12], 
+                cleaned_row[13], 
+                cleaned_row[14], 
+                cleaned_row[15]
+            )
+        )
 
-    def insertTributos(self, cursor, row):
-        cursor.execute(self.directInsert('tributos'), (None, row[0], row[1], row[2], float(row[3]), row[4]))
+    def insertFuncionarios(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('funcionarios'), 
+            (
+                None, 
+                cleaned_row[0], 
+                cleaned_row[1], 
+                cleaned_row[2]
+            )
+        )
 
-    def insertFornecedores(self, cursor, row):
-        cursor.execute(self.directInsert('fornecedores'), (None, row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15]))
+    def insertClientes(self, row):
+        cleaned_row = self.cleanRows(row)
+        self.__cursor.execute(
+            self.__insertWithPK('clientes'), 
+            (
+                None, 
+                cleaned_row[0],
+                cleaned_row[1], 
+                cleaned_row[2], 
+                cleaned_row[3],
+                cleaned_row[4], 
+                cleaned_row[5], 
+                cleaned_row[6], 
+                cleaned_row[7], 
+                cleaned_row[8], 
+                cleaned_row[9], 
+                cleaned_row[10], 
+                cleaned_row[11],
+                cleaned_row[12], 
+                cleaned_row[13], 
+                cleaned_row[14], 
+                cleaned_row[15],
+                cleaned_row[16],
+                cleaned_row[17]
+            )
+        )
 
-    def insertFuncionarios(self, cursor, row):
-        cursor.execute(self.directInsert('funcionarios'), (None, row[0], row[1], row[2]))
+    def insertTanques(self, row):
+        self.__cursor.execute(self.__insertWithPK('tanques'), (None, row[0], float(row[1]), row[2]))
 
-    def insertClientes(self, cursor, row):
-        cursor.execute(self.directInsert('clientes'), (None, row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16]))
-
-    def insertTanques(self, cursor, row):
-        cursor.execute(self.directInsert('tanques'), (None, row[0], float(row[1]), row[2]))
+    def insertCidade(self, row):
+        self.__cursor.execute(self.__insertWithPK('cidade'), (None, row[0], row[1].rstrip(), row[2]))
 
     # def insertProdutosCompletos(self, cursor, row):
     #     codigo = row[0]
